@@ -295,8 +295,9 @@ def AttendanceSheetAPI(request, cid=None, *args, **kwargs):
         # Attendance sheet logic
         #
         # photo_url = 
-        blob = bucket.blob(f"attendance/{cid}.jpg")
-        x = blob.generate_signed_url(timedelta(seconds=300), method='GET') 
+        # blob = bucket.blob(f"attendance/{cid}.jpg")
+        # x = blob.generate_signed_url(timedelta(seconds=300), method='GET') 
+        x = request.data['photo_url']
         download_image(x, 'attendance/', cid)
         
         x = pytesseract.image_to_string(f'construct_user/attendance/{cid}.jpg')
