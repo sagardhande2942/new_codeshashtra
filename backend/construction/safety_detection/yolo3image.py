@@ -221,36 +221,38 @@ def yolo3(path):
     # that uses extension to choose format to save with
     cv2.imwrite('safety_detection/result.jpg', image_BGR)
 
-# yolo3("image2.jpg")
-# print(my_dict)
+    # yolo3("image2.jpg")
+    # print(my_dict)
 
-# my_dict1 = {
-#     "helmet":0,
-#     "vest": 0,
-#     "goggles": 0
-# }
+    my_dict1 = {
+        "helmet":0,
+        "vest": 0,
+        "goggles": 0
+    }
 
-# for key, values in my_dict.items():
-#     if not "no" in values:
-#         my_dict1[values] = 1
+    for key, values in my_dict.items():
+        if not "no" in values:
+            my_dict1[values] = 1
 
-# safety_string = ""
-# counter = 0    
+    safety_string = ""
+    counter = 0    
 
-# if not my_dict1['helmet']:
-#     safety_string += "Worker is missing helmet\n"
-# else:
-#     counter += 1
+    if not my_dict1['helmet']:
+        safety_string += "Worker is missing helmetXX\n"
+    else:
+        counter += 1
 
-# if not my_dict1['vest']:
-#     safety_string += "Worker is missing vest\n"
-# else:
-#     counter += 1
+    if not my_dict1['vest']:
+        safety_string += "Worker is missing vestXX\n"
+    else:
+        counter += 1
 
-# if not my_dict1['goggles']:
-#     safety_string += "Worker is missing goggles\n"
-# else:
-#     counter += 1
+    if not my_dict1['goggles']:
+        safety_string += "Worker is missing gogglesXX\n"
+    else:
+        counter += 1
+
+    return (counter, safety_string)
     
 
 

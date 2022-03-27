@@ -108,7 +108,8 @@ class Safety_Violation(models.Model):
     photo_url = models.CharField(max_length=200, null=True)
     latitude = models.CharField(max_length=200, null=True)
     longitude = models.CharField(max_length= 200, null=True)
-
+    message = models.CharField(max_length=200, null=True)
+    
     def __str__(self):
         return self.uid
 

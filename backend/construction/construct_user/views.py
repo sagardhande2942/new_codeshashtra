@@ -1,5 +1,6 @@
 from asyncio.windows_events import NULL
 from cgitb import lookup
+from email import message
 from os import set_inheritable
 from pydoc import resolve
 from unittest import installHandler
@@ -23,6 +24,8 @@ import requests
 import shutil
 from safety_detection import yolo3image
 from construct_user import aadhar_OCR
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files (x86)\\Tesseract-OCR\\tesseract'
 
 def download_image(url, file_path, file_name):
     file_path = "construct_user/" + file_path + file_name + ".jpg"
@@ -291,7 +294,29 @@ def AttendanceSheetAPI(request, cid=None, *args, **kwargs):
         #
         # Attendance sheet logic
         #
-        pass
+        # photo_url = 
+        blob = bucket.blob(f"attendance/{cid}.jpg")
+        x = blob.generate_signed_url(timedelta(seconds=300), method='GET') 
+        download_image(x, 'attendance/', cid)
+        
+        x = pytesseract.image_to_string(f'construct_user/attendance/{cid}.jpg')
+        x = x.split("\n")
+        print(x)
+        wids = []
+        for i in x:
+            s = i
+            print(s)
+            if 'present' in s:
+                f = s.split(" ")
+                wids.append(f[0])
+        
+        print(wids)
+    
+    for i in wids:
+        Attendance(uid = i, is_present = True).save()
+    
+    return HttpResponse("Success", status=200)
+        
 
 
 class WorkerRetrieveAPI(generics.RetrieveAPIView):
@@ -409,40 +434,51 @@ def SafetyIdentification(request, wid = None, *args, **kwargs):
         success = True
         fps = int(vidcap.get(cv2.CAP_PROP_FPS))
         print(fps)
+        count1 = 0
         while success:
             im_path = ""
             success,image = vidcap.read()
             print('read a new frame:',success)
             if count == 0:
-                cv2.imwrite('safety_detection/frame%d.jpg'%count,image)
-                im_path = 'safety_detection/frame%d.jpg'%count
+                try:                
+                    cv2.imwrite('safety_detection/frame%d.jpg'%count1,image)
+                except:
+                    break
+                im_path = 'safety_detection/frame%d.jpg'%count1
                 print('successfully written 10th frame')
-                yolo3image.yolo3(im_path)
-                user_image_location = face_recognition.load_image_file(
-                '{}.jpg'.format(f'construct_user/trash/worker/{wid}'))
-                user_image_encoding = face_recognition.face_encodings(user_image_location)[0]
+                counter, safety_string = yolo3image.yolo3(im_path)
+                imageBlob1 = bucket.blob(f"safety_detection0/frame{count1}{wid}.jpg")
+                imagePath1 = f"safety_detection/result.jpg"  # Replace with your own path
+                imageBlob1.upload_from_filename(imagePath1)
+                imageBlob1.make_public()
+                image_url1 = imageBlob1.public_url
+                if counter < 3:
+                    user_image_location = face_recognition.load_image_file(
+                    '{}.jpg'.format(f'safety_detection/frame{count1}'))
+                    user_image_encoding = face_recognition.face_encodings(user_image_location)[0]
 
-                w_qs = Worker.objects.all()
-                for value in w_qs:
-                    db_face_locations = face_recognition.load_image_file(
-                    '{}.jpg'.format(f'construct_user/worker/{value.wid}'))
-                    db_face_encodings = face_recognition.face_encodings(db_face_locations)[0]
+                    w_qs = Worker.objects.filter(wid = wid)
+                    for value in w_qs:
+                        db_face_locations = face_recognition.load_image_file(
+                        '{}.jpg'.format(f'construct_user/worker/{value.wid}'))
+                        db_face_encodings = face_recognition.face_encodings(db_face_locations)[0]
 
-                    match = face_recognition.face_distance( [user_image_encoding], db_face_encodings)
-                    match = match[0]
-                    print(match)
-                    if match < 0.4:
-                        imageBlob = bucket.blob("/safety_violation/")
-                        imagePath = "safety_detection/frame0.jpg"  # Replace with your own path
-                        imageBlob = bucket.blob("frame0.jpg")
-                        imageBlob.upload_from_filename(imagePath)
-                        imageBlob.make_public()
-                        image_url = imageBlob.public_url
-                        wos_qs = WOSMap.objects.filter(wid = wid).first()
-                        site_qs = Site.objects.filter(sid = wos_qs.sid).first()
-                        Safety_Violation(uid=value.wid, photo_url = image_url, latitude=site_qs.longitude, longitude=site_qs.latitude).save()
+                        match = face_recognition.face_distance( [user_image_encoding], db_face_encodings)
+                        match = match[0]
+                        print(match)
+                        if match < 0.4:
+                            imageBlob = bucket.blob(f"safety_detection1/frame{count1}{wid}.jpg")
+                            imagePath = "safety_detection/result.jpg"  # Replace with your own path
+                            # imageBlob = bucket.blob("frame0.jpg")
+                            imageBlob.upload_from_filename(imagePath)
+                            imageBlob.make_public()
+                            image_url = imageBlob.public_url
+                            wos_qs = WOSMap.objects.filter(wid = wid).first()
+                            site_qs = Site.objects.filter(sid = wos_qs.sid).first()
+                            Safety_Violation(uid=value.wid, photo_url = image_url, latitude=site_qs.longitude, longitude=site_qs.latitude, message = safety_string).save()
 
             count+=1
+            count1 += 1
             if count > 2*fps + 1: 
                 count = 0
             print(count)
@@ -473,3 +509,5 @@ def WorkerAadhaarLinkAPI(request, wid = None, *args, **kwargs):
         # return HttpResponse("hi")
 
         return Response({"aadhar number" : number, "gender":gender})
+
+

@@ -24,4 +24,5 @@ urlpatterns = [
     path('workersnotassigned/', views.WorkersNotAssignedAPI),
     path('workertocontractor/<str:cid>', views.WorkerToContractor),
     path('worker/aadharlink/<str:wid>',views.WorkerAadhaarLinkAPI),
+    path('attendance/<str:cid>', views.AttendanceSheetAPI),
 ]
