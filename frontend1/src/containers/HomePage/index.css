@@ -1,0 +1,39 @@
+/* .bgVideo{
+    width:100vw;
+    height:100vh;
+} */
+.bgVideo { 
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    overflow:hidden;
+}
+.btnOption{
+    position:absolute;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    
+}
+.btn{
+    padding:1rem;
+    background-color: #FDA50F;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    font-size:20px;
+    font-weight:600;
+}
+.centerBtn{
+    margin: 0 9rem;
+}
+@media screen and (max-width:768px) {
+    .btnOption{
+        top:5rem;
+    }
+    .centerBtn{
+        margin: 2rem 0;
+    }
+}
