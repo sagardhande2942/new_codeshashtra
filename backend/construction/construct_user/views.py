@@ -426,7 +426,7 @@ def WorkerToContractor(request, cid = None, *args, **kwargs):
 def SafetyIdentification(request, wid = None, *args, **kwargs):
     if wid == None:
         return HttpResponse("WID invalid", status=404)
-    
+    links = []
     if request.method == "POST":
         # yolo3image.yolo3("image2.jpg")
         vidcap = cv2.VideoCapture('construct_user/My_video.mp4')
@@ -452,6 +452,7 @@ def SafetyIdentification(request, wid = None, *args, **kwargs):
                 imageBlob1.upload_from_filename(imagePath1)
                 imageBlob1.make_public()
                 image_url1 = imageBlob1.public_url
+                links.append(image_url1)
                 if counter < 3:
                     user_image_location = face_recognition.load_image_file(
                     '{}.jpg'.format(f'safety_detection/frame{count1}'))
@@ -473,6 +474,7 @@ def SafetyIdentification(request, wid = None, *args, **kwargs):
                             imageBlob.upload_from_filename(imagePath)
                             imageBlob.make_public()
                             image_url = imageBlob.public_url
+                            links.append(image_url)
                             wos_qs = WOSMap.objects.filter(wid = wid).first()
                             site_qs = Site.objects.filter(sid = wos_qs.sid).first()
                             Safety_Violation(uid=value.wid, photo_url = image_url, latitude=site_qs.longitude, longitude=site_qs.latitude, message = safety_string).save()
@@ -484,7 +486,7 @@ def SafetyIdentification(request, wid = None, *args, **kwargs):
             print(count)
 
 
-    return HttpResponse("success", status=200)
+    return Response(links)
 
 @api_view(['POST','GET'])
 def WorkerAadhaarLinkAPI(request, wid = None, *args, **kwargs):
