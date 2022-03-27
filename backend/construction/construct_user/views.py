@@ -69,7 +69,7 @@ def register_user(request, *args, **kwargs):
             if serializer.is_valid(raise_exception=True):
                 instance = serializer.save()
                 qs1 = Contractor.objects.get(id = instance.id)
-                qs1.cid = f'w{qs1.id}'
+                qs1.cid = f'c{qs1.id}'
                 qs1.save()    
             print(serializer)
         if request.data['role'] == '2': 
@@ -82,7 +82,7 @@ def register_user(request, *args, **kwargs):
             if serializer.is_valid(raise_exception=True):
                 instance = serializer.save()  
                 qs1 = Owner.objects.get(id = instance.id)
-                qs1.oid = f'w{qs1.id}'
+                qs1.oid = f'c{qs1.id}'
                 qs1.save()  
             print(serializer)
         
@@ -470,6 +470,6 @@ def WorkerAadhaarLinkAPI(request, wid = None, *args, **kwargs):
         w_ins.gender = gender
         w_ins.save()    
 
-        return HttpResponse("hi")
+        # return HttpResponse("hi")
 
-        # return Response(WorkerEdit(wid).data)
+        return Response({"aadhar number" : number, "gender":gender})
